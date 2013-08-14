@@ -37,16 +37,17 @@ Source-Repository head
   location:     http://patch-tag.com/r/AndyStewart/poppler
 
 Library
-        build-depends:  base >= 4 && < 5, array, containers, 
+        build-depends:  base >= 4 && < 5, array, containers,
                         mtl, bytestring,
                         glib >= 0.12 && < 0.13,
                         cairo >= 0.12 && < 0.13,
                         gtk >= 0.12 && < 0.13
---						haskell98, 
+--						haskell98,
         build-tools:    gtk2hsC2hs, gtk2hsHookGenerator, gtk2hsTypeGen
-						
+
         exposed-modules:
           Graphics.UI.Gtk.Poppler.Action
+          Graphics.UI.Gtk.Poppler.Annotation
           Graphics.UI.Gtk.Poppler.Attachment
           Graphics.UI.Gtk.Poppler.Document
           Graphics.UI.Gtk.Poppler.FormField
@@ -59,7 +60,7 @@ Library
           Graphics.UI.Gtk.Poppler.Types
 
         extensions:     ForeignFunctionInterface
-		
+
         include-dirs:   .
         x-c2hs-Header:  glib/poppler.h
         pkgconfig-depends: poppler-glib >= 0.12.4, gobject-2.0, glib-2.0, cairo >= 1.2.0, gdk-2.0, gdk-pixbuf-2.0, pango

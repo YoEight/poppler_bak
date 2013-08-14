@@ -36,46 +36,42 @@
 module Graphics.UI.Gtk.Poppler.Types (
 
   Document(Document), DocumentClass,
-  toDocument, 
+  toDocument,
   mkDocument, unDocument,
   castToDocument, gTypeDocument,
   FontsIter(FontsIter), FontsIterClass,
-  toFontsIter, 
+  toFontsIter,
   mkFontsIter, unFontsIter,
   castToFontsIter, gTypeFontsIter,
   Page(Page), PageClass,
-  toPage, 
+  toPage,
   mkPage, unPage,
   castToPage, gTypePage,
   FormField(FormField), FormFieldClass,
-  toFormField, 
+  toFormField,
   mkFormField, unFormField,
   castToFormField, gTypeFormField,
   PSFile(PSFile), PSFileClass,
-  toPSFile, 
+  toPSFile,
   mkPSFile, unPSFile,
   castToPSFile, gTypePSFile,
   FontInfo(FontInfo), FontInfoClass,
-  toFontInfo, 
+  toFontInfo,
   mkFontInfo, unFontInfo,
   castToFontInfo, gTypeFontInfo,
   Attachment(Attachment), AttachmentClass,
-  toAttachment, 
+  toAttachment,
   mkAttachment, unAttachment,
   castToAttachment, gTypeAttachment,
   Layer(Layer), LayerClass,
-  toLayer, 
+  toLayer,
   mkLayer, unLayer,
   castToLayer, gTypeLayer
   ) where
 
 import Foreign.ForeignPtr (ForeignPtr, castForeignPtr, unsafeForeignPtrToPtr)
-#if __GLASGOW_HASKELL__>=704
 import Foreign.C.Types    (CULong(..), CUInt(..))
-#else
-import Foreign.C.Types    (CULong, CUInt)
-#endif
-import System.Glib.GType	(GType, typeInstanceIsA)
+import System.Glib.GType  (GType, typeInstanceIsA)
 import System.Glib.GObject
 
 {# context lib="poppler" prefix="poppler" #}
@@ -92,6 +88,28 @@ castTo gtype objTypeName obj =
                   -> unsafeCastGObject gobj
       | otherwise -> error $ "Cannot cast object to " ++ objTypeName
 
+-- ******************************************************************* Annot
+
+{#pointer *Annot foreign newtype #} deriving (Eq, Ord)
+
+mkAnnot = (Annot, objectUnref)
+unAnnot (Annot a) = a
+
+class GObjectClass a => AnnotClass a
+toAnnot :: AnnotClass a => a -> Annot
+toAnnot = unsafeCastGObject . toGObject
+
+instance AnnotClass Annot
+instance GObjectClass Annot where
+  toGObject = GObject . castForeignPtr . unAnnot
+  unsafeCastGObject = Annot . castForeignPtr . unGObject
+
+castToAnnot :: GObjectClass obj => obj -> Annot
+castToAnnot = castTo gTypeAnnot "Annot"
+
+gTypeAnnot :: GType
+gTypeAnnot =
+  {# call fun unsafe poppler_annot_get_type #}
 
 -- ******************************************************************* Document
 
@@ -276,4 +294,3 @@ castToLayer = castTo gTypeLayer "Layer"
 gTypeLayer :: GType
 gTypeLayer =
   {# call fun unsafe poppler_layer_get_type #}
-
