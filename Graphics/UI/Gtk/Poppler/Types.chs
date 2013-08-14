@@ -35,6 +35,10 @@
 --
 module Graphics.UI.Gtk.Poppler.Types (
 
+  Annot(Annot), AnnotClass,
+  toAnnot,
+  mkAnnot, unAnnot,
+  castToAnnot, gTypeAnnot,
   Document(Document), DocumentClass,
   toDocument,
   mkDocument, unDocument,
