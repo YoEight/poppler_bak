@@ -39,8 +39,9 @@ module Graphics.UI.Gtk.Poppler.Types (
   toAnnot,
   mkAnnot, unAnnot,
   castToAnnot, gTypeAnnot,
-  AnnotMarkup(AnnotMarkup), AnnotMarkup,
+  AnnotMarkup(AnnotMarkup), AnnotMarkupClass,
   mkAnnotMarkup, gTypeAnnotMarkup,
+  toAnnotMarkup,
   Document(Document), DocumentClass,
   toDocument,
   mkDocument, unDocument,
@@ -128,6 +129,9 @@ instance GObjectClass AnnotMarkup where
   unsafeCastGObject = AnnotMarkup . castForeignPtr . unGObject
 instance AnnotClass AnnotMarkup
 instance AnnotMarkupClass AnnotMarkup
+
+toAnnotMarkup :: AnnotMarkupClass a => a -> AnnotMarkup
+toAnnotMarkup = unsafeCastGObject . toGObject
 
 gTypeAnnotMarkup :: GType
 gTypeAnnotMarkup =

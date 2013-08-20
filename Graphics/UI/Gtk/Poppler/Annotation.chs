@@ -3,6 +3,8 @@ module Graphics.UI.Gtk.Poppler.Annotation (
     AnnotClass,
     AnnotType (..),
     AnnotFlag (..),
+    AnnotMarkup,
+    AnnotMarkupClass,
     annotGetAnnotType,
     annotGetAnnotFlags,
     annotGetName,
@@ -12,6 +14,15 @@ module Graphics.UI.Gtk.Poppler.Annotation (
     annotGetContents,
     annotSetContents,
     annotGetModified,
+    annotMarkupGetLabel,
+    annotMarkupSetLabel,
+    annotMarkupGetSubject,
+    annotMarkupGetOpacity,
+    annotMarkupSetOpacity,
+    annotMarkupHasPopup,
+    annotMarkupSetPopup,
+    annotMarkupGetPopupIsOpen,
+    annotMarkupSetPopupIsOpen,
     annotTextNew
     ) where
 
@@ -73,6 +84,58 @@ annotSetContents annot content =
 annotGetModified :: AnnotClass annot => annot -> IO String
 annotGetModified annot =
   {# call poppler_annot_get_modified #} (toAnnot annot) >>= peekUTFString
+
+annotMarkupGetLabel :: AnnotMarkupClass mark => mark -> IO String
+annotMarkupGetLabel mark =
+  peekUTFString =<<
+  {# call poppler_annot_markup_get_label #} (toAnnotMarkup mark)
+
+annotMarkupSetLabel :: AnnotMarkupClass mark => mark -> String -> IO ()
+annotMarkupSetLabel mark label =
+  withUTFString label $ \labelPtr ->
+    {# call poppler_annot_markup_set_label #}
+    (toAnnotMarkup mark)
+    (castPtr labelPtr)
+
+annotMarkupGetSubject :: AnnotMarkupClass mark => mark -> IO String
+annotMarkupGetSubject mark =
+  peekUTFString =<<
+  {# call poppler_annot_markup_get_subject #} (toAnnotMarkup mark)
+
+annotMarkupGetOpacity :: AnnotMarkupClass mark => mark -> IO Double
+annotMarkupGetOpacity mark =
+  liftM realToFrac $
+  {# call poppler_annot_markup_get_opacity #} (toAnnotMarkup mark)
+
+annotMarkupSetOpacity :: AnnotMarkupClass mark => mark -> Double -> IO ()
+annotMarkupSetOpacity mark opacity =
+  {# call poppler_annot_markup_set_opacity #}
+  (toAnnotMarkup mark)
+  (realToFrac opacity)
+
+annotMarkupHasPopup :: AnnotMarkupClass mark => mark -> IO Bool
+annotMarkupHasPopup mark =
+  liftM toBool $
+  {# call poppler_annot_markup_has_popup #} (toAnnotMarkup mark)
+
+annotMarkupSetPopup :: AnnotMarkupClass mark
+                    => mark
+                    -> PopplerRectangle
+                    -> IO ()
+annotMarkupSetPopup mark rect =
+  with rect $ \rectPtr ->
+    {# call poppler_annot_markup_set_popup #} (toAnnotMarkup mark) (castPtr rectPtr)
+
+annotMarkupGetPopupIsOpen :: AnnotMarkupClass mark => mark -> IO Bool
+annotMarkupGetPopupIsOpen mark =
+  liftM toBool $
+  {# call poppler_annot_markup_get_popup_is_open #} (toAnnotMarkup mark)
+
+annotMarkupSetPopupIsOpen :: AnnotMarkupClass mark => mark -> Bool -> IO ()
+annotMarkupSetPopupIsOpen mark bool =
+  {# call poppler_annot_markup_set_popup_is_open #}
+  (toAnnotMarkup mark)
+  (fromBool bool)
 
 annotTextNew :: DocumentClass doc => doc -> PopplerRectangle -> IO Annot
 annotTextNew doc selection =
