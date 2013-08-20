@@ -16,8 +16,8 @@
 # --tag=<tag> is given on the command line of TypeGenerator.
 
 
-    GObject 
-        GdkDrawable 
+    GObject
+        GdkDrawable
             GdkWindow		as DrawWindow, gdk_window_object_get_type
 #            GdkDrawableImplX11
 #                GdkWindowImplX11
@@ -57,7 +57,7 @@
                     GtkArrow
                     GtkImage
                 GtkContainer
-                    WebKitWebView as WebView, webkit_web_view_get_type            if webkit 
+                    WebKitWebView as WebView, webkit_web_view_get_type            if webkit
                     GtkBin
                         GtkAlignment
                         GtkFrame
@@ -166,7 +166,7 @@
                 GtkIMMulticontext
             GtkItemFactory		if deprecated
             GtkTooltips
-			
+
 # These object were added by hand because they do not show up in the hierarchy
 # chart.
 # These are derived from GtkObject:
@@ -321,7 +321,7 @@
         GstAdapter                      as Adapter,             gst_adapter_get_type                    if gstreamer
         GstController                   as Controller,          gst_controller_get_type                 if gstreamer
 
-        WebKitWebFrame as WebFrame, webkit_web_frame_get_type          if webkit 
+        WebKitWebFrame as WebFrame, webkit_web_frame_get_type          if webkit
         WebKitWebSettings as WebSettings, webkit_web_settings_get_type    if webkit
         WebKitNetworkRequest as NetworkRequest, webkit_network_request_get_type  if webkit
         WebKitNetworkResponse as NetworkResponse, webkit_network_response_get_type    if webkit
@@ -346,5 +346,7 @@
         PopplerFormField as FormField, poppler_form_field_get_type if poppler
         PopplerPSFile as PSFile, poppler_ps_file_get_type if poppler
         PopplerFontInfo as FontInfo, poppler_font_info_get_type if poppler
+        PopplerAnnot as Annot, poppler_annot_get_type if poppler
+        PopplerAnnotMarkup as AnnotMarkup, poppler_annot_markup_get_type if poppler
         PopplerAttachment as Attachment, poppler_attachment_get_type if poppler
         PopplerLayer as Layer, poppler_layer_get_type if poppler

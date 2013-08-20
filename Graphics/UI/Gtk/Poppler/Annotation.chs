@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP, DeriveDataTypeable #-}
 module Graphics.UI.Gtk.Poppler.Annotation (
     Annot,
     AnnotClass,

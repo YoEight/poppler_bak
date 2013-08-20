@@ -35,43 +35,44 @@
 --
 module Graphics.UI.Gtk.Poppler.Types (
 
-  Annot(Annot), AnnotClass,
-  toAnnot,
-  mkAnnot, unAnnot,
-  castToAnnot, gTypeAnnot,
-  AnnotMarkup(AnnotMarkup), AnnotMarkupClass,
-  mkAnnotMarkup, gTypeAnnotMarkup,
-  toAnnotMarkup,
   Document(Document), DocumentClass,
-  toDocument,
+  toDocument, 
   mkDocument, unDocument,
   castToDocument, gTypeDocument,
   FontsIter(FontsIter), FontsIterClass,
-  toFontsIter,
+  toFontsIter, 
   mkFontsIter, unFontsIter,
   castToFontsIter, gTypeFontsIter,
   Page(Page), PageClass,
-  toPage,
+  toPage, 
   mkPage, unPage,
   castToPage, gTypePage,
   FormField(FormField), FormFieldClass,
-  toFormField,
+  toFormField, 
   mkFormField, unFormField,
   castToFormField, gTypeFormField,
   PSFile(PSFile), PSFileClass,
-  toPSFile,
+  toPSFile, 
   mkPSFile, unPSFile,
   castToPSFile, gTypePSFile,
   FontInfo(FontInfo), FontInfoClass,
-  toFontInfo,
+  toFontInfo, 
   mkFontInfo, unFontInfo,
   castToFontInfo, gTypeFontInfo,
+  Annot(Annot), AnnotClass,
+  toAnnot, 
+  mkAnnot, unAnnot,
+  castToAnnot, gTypeAnnot,
+  AnnotMarkup(AnnotMarkup), AnnotMarkupClass,
+  toAnnotMarkup, 
+  mkAnnotMarkup, unAnnotMarkup,
+  castToAnnotMarkup, gTypeAnnotMarkup,
   Attachment(Attachment), AttachmentClass,
-  toAttachment,
+  toAttachment, 
   mkAttachment, unAttachment,
   castToAttachment, gTypeAttachment,
   Layer(Layer), LayerClass,
-  toLayer,
+  toLayer, 
   mkLayer, unLayer,
   castToLayer, gTypeLayer
   ) where
@@ -95,47 +96,6 @@ castTo gtype objTypeName obj =
                   -> unsafeCastGObject gobj
       | otherwise -> error $ "Cannot cast object to " ++ objTypeName
 
--- ******************************************************************* Annot
-
-{#pointer *Annot foreign newtype #} deriving (Eq, Ord)
-
-mkAnnot = (Annot, objectUnref)
-unAnnot (Annot a) = a
-
-class GObjectClass a => AnnotClass a
-toAnnot :: AnnotClass a => a -> Annot
-toAnnot = unsafeCastGObject . toGObject
-
-instance AnnotClass Annot
-instance GObjectClass Annot where
-  toGObject = GObject . castForeignPtr . unAnnot
-  unsafeCastGObject = Annot . castForeignPtr . unGObject
-
-castToAnnot :: GObjectClass obj => obj -> Annot
-castToAnnot = castTo gTypeAnnot "Annot"
-
-gTypeAnnot :: GType
-gTypeAnnot =
-  {# call fun unsafe poppler_annot_get_type #}
-
-{#pointer *AnnotMarkup foreign newtype #} deriving (Eq, Ord)
-
-mkAnnotMarkup = (AnnotMarkup, objectUnref)
-unAnnotMarkup (AnnotMarkup a) = a
-
-class AnnotClass a => AnnotMarkupClass a
-instance GObjectClass AnnotMarkup where
-  toGObject = GObject . castForeignPtr . unAnnotMarkup
-  unsafeCastGObject = AnnotMarkup . castForeignPtr . unGObject
-instance AnnotClass AnnotMarkup
-instance AnnotMarkupClass AnnotMarkup
-
-toAnnotMarkup :: AnnotMarkupClass a => a -> AnnotMarkup
-toAnnotMarkup = unsafeCastGObject . toGObject
-
-gTypeAnnotMarkup :: GType
-gTypeAnnotMarkup =
-  {# call fun unsafe poppler_annot_markup_get_type #}
 
 -- ******************************************************************* Document
 
@@ -275,6 +235,52 @@ gTypeFontInfo :: GType
 gTypeFontInfo =
   {# call fun unsafe poppler_font_info_get_type #}
 
+-- ********************************************************************** Annot
+
+{#pointer *Annot foreign newtype #} deriving (Eq,Ord)
+
+mkAnnot = (Annot, objectUnref)
+unAnnot (Annot o) = o
+
+class GObjectClass o => AnnotClass o
+toAnnot :: AnnotClass o => o -> Annot
+toAnnot = unsafeCastGObject . toGObject
+
+instance AnnotClass Annot
+instance GObjectClass Annot where
+  toGObject = GObject . castForeignPtr . unAnnot
+  unsafeCastGObject = Annot . castForeignPtr . unGObject
+
+castToAnnot :: GObjectClass obj => obj -> Annot
+castToAnnot = castTo gTypeAnnot "Annot"
+
+gTypeAnnot :: GType
+gTypeAnnot =
+  {# call fun unsafe poppler_annot_get_type #}
+
+-- **************************************************************** AnnotMarkup
+
+{#pointer *AnnotMarkup foreign newtype #} deriving (Eq,Ord)
+
+mkAnnotMarkup = (AnnotMarkup, objectUnref)
+unAnnotMarkup (AnnotMarkup o) = o
+
+class GObjectClass o => AnnotMarkupClass o
+toAnnotMarkup :: AnnotMarkupClass o => o -> AnnotMarkup
+toAnnotMarkup = unsafeCastGObject . toGObject
+
+instance AnnotMarkupClass AnnotMarkup
+instance GObjectClass AnnotMarkup where
+  toGObject = GObject . castForeignPtr . unAnnotMarkup
+  unsafeCastGObject = AnnotMarkup . castForeignPtr . unGObject
+
+castToAnnotMarkup :: GObjectClass obj => obj -> AnnotMarkup
+castToAnnotMarkup = castTo gTypeAnnotMarkup "AnnotMarkup"
+
+gTypeAnnotMarkup :: GType
+gTypeAnnotMarkup =
+  {# call fun unsafe poppler_annot_markup_get_type #}
+
 -- ***************************************************************** Attachment
 
 {#pointer *Attachment foreign newtype #} deriving (Eq,Ord)
@@ -320,3 +326,4 @@ castToLayer = castTo gTypeLayer "Layer"
 gTypeLayer :: GType
 gTypeLayer =
   {# call fun unsafe poppler_layer_get_type #}
+
