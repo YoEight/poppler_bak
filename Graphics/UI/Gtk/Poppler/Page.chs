@@ -10,20 +10,20 @@
 --  modify it under the terms of the GNU Lesser General Public License
 --  as published by the Free Software Foundation, either version 3 of
 --  the License, or (at your option) any later version.
---  
+--
 --  This library is distributed in the hope that it will be useful,
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 --  Lesser General Public License for more details.
---  
+--
 --  You should have received a copy of the GNU Lesser General Public
 --  License along with this program.  If not, see
 --  <http://www.gnu.org/licenses/>.
---  
+--
 --  POPPLER, the C library which this Haskell library depends on, is
 --  available under LGPL Version 2. The documentation included with
 --  this library is based on the original POPPLER documentation.
---  
+--
 -- | Maintainer  : gtk2hs-devel@lists.sourceforge.net
 --   Stability   : alpha
 --   Portability : portable (depends on GHC)
@@ -57,6 +57,8 @@ module Graphics.UI.Gtk.Poppler.Page (
     pageGetFormFieldMapping,
     pageGetSelectionRegion,
     pageRenderSelection,
+    pageAddAnnot,
+    pageRemoveAnnot
     -- pageRenderSelectionToPixbuf,
     ) where
 
@@ -84,7 +86,7 @@ import Graphics.Rendering.Cairo.Internal (Render(..), bracketR)
 -- instead
 pageRender :: PageClass page => page
  -> Render ()
-pageRender page = 
+pageRender page =
   ask >>= \ x -> liftIO ({#call poppler_page_render #} (toPage page) x)
 
 -- | First scale the document to match the specified pixels per point, then render the rectangle given by
@@ -93,9 +95,9 @@ pageRender page =
 -- 'pageRenderToPixbufForPrinting' instead
 {- pageRenderToPixbuf :: PageClass page => page
  -> Rectangle -- ^ @rect@      rectangle to render
- -> Double -- ^ @scale@      scale specified as pixels per point         
- -> Int -- ^ @rotation@   rotate the document by the specified degree 
- -> Pixbuf -- ^ @pixbuf@     pixbuf to render into                       
+ -> Double -- ^ @scale@      scale specified as pixels per point
+ -> Int -- ^ @rotation@   rotate the document by the specified degree
+ -> Pixbuf -- ^ @pixbuf@     pixbuf to render into
  -> IO ()
 pageRenderToPixbuf page (Rectangle x y width height) scale rotation pixbuf =
   {#call poppler_page_render_to_pixbuf #}
@@ -110,10 +112,10 @@ pageRenderToPixbuf page (Rectangle x y width height) scale rotation pixbuf =
 -}
 
 -- | Gets the size of page at the current scale and rotation.
-pageGetSize :: PageClass page => page 
+pageGetSize :: PageClass page => page
  -> IO (Double, Double)
 pageGetSize page =
-  alloca $ \ widthPtr -> 
+  alloca $ \ widthPtr ->
   alloca $ \ heightPtr -> do
       {#call poppler_page_get_size #}
         (toPage page)
@@ -122,14 +124,14 @@ pageGetSize page =
       width <- peek widthPtr
       height <- peek heightPtr
       return (realToFrac width, realToFrac height)
-  
+
 -- | Returns the index of page
 pageGetIndex :: PageClass page => page
- -> IO Int  -- ^ returns index value of page 
+ -> IO Int  -- ^ returns index value of page
 pageGetIndex page =
-  liftM fromIntegral $ 
+  liftM fromIntegral $
   {#call poppler_page_get_index #} (toPage page)
-  
+
 -- | Get the embedded thumbnail for the specified page. If the document doesn't have an embedded
 -- thumbnail for the page, this function returns 'Nothing'.
 pageGetThumbnail :: PageClass page => page
@@ -145,52 +147,52 @@ pageGetThumbnail page = do
 -- thumbnail exists.
 pageGetThumbnailSize :: PageClass page => page
  -> IO (Maybe (Int, Int))
-pageGetThumbnailSize page = 
-  alloca $ \ widthPtr -> 
+pageGetThumbnailSize page =
+  alloca $ \ widthPtr ->
   alloca $ \ heightPtr -> do
     success <- liftM toBool $
                 {#call poppler_page_get_thumbnail_size #}
                   (toPage page)
                   widthPtr
                   heightPtr
-    if success 
+    if success
        then do
          width  <- peek widthPtr
          height <- peek heightPtr
          return $ Just (fromIntegral width, fromIntegral height)
        else return Nothing
-  
+
 -- | Render the page on a postscript file
 pageRenderToPs :: (PageClass page, PSFileClass psFile) => page -> psFile -> IO ()
-pageRenderToPs page psFile = 
+pageRenderToPs page psFile =
   {#call poppler_page_render_to_ps #} (toPage page) (toPSFile psFile)
 
 -- | A GList of rectangles for each occurance of the text on the page. The coordinates are in PDF points.
 pageFindText :: PageClass page => page
- -> String  -- ^ @text@    the text to search for (UTF-8 encoded) 
+ -> String  -- ^ @text@    the text to search for (UTF-8 encoded)
  -> IO [PopplerRectangle]
-pageFindText page text = 
+pageFindText page text =
   withUTFString text $ \ textPtr -> do
     glistPtr <- {#call poppler_page_find_text #} (toPage page) textPtr
     list <- fromGList glistPtr
     mapM peekPopplerRectangle list
-    
+
 -- | Retrieves the contents of the specified selection as text.
 pageGetText :: PageClass page => page -> IO String  -- ^ returns selection string
-pageGetText page = 
+pageGetText page =
   {#call poppler_page_get_text #} (toPage page)
   >>= peekUTFString
-  
+
 -- | Returns the duration of page
 pageGetDuration :: PageClass page => page
- -> IO Double  -- ^ returns duration in seconds of page or -1. 
+ -> IO Double  -- ^ returns duration in seconds of page or -1.
 pageGetDuration page =
   liftM realToFrac $
   {#call poppler_page_get_duration #} (toPage page)
 
 -- | Returns the transition effect of page
 pageGetTransition :: PageClass page => page
- -> IO (Maybe PageTransition) -- ^ returns a 'PageTransition' or 'Nothing'. 
+ -> IO (Maybe PageTransition) -- ^ returns a 'PageTransition' or 'Nothing'.
 pageGetTransition page = do
   ptr <- {#call poppler_page_get_transition #} (toPage page)
   if ptr == nullPtr
@@ -207,7 +209,7 @@ makeNewPageTransition rPtr = do
 foreign import ccall unsafe "&poppler_page_transition_free"
   page_transition_free :: FinalizerPtr PageTransition
 
--- | Returns a list of 'LinkMapping' items that map from a location on page to a 'Action'. 
+-- | Returns a list of 'LinkMapping' items that map from a location on page to a 'Action'.
 pageGetLinkMapping :: PageClass page => page
  -> IO [LinkMapping]
 pageGetLinkMapping page = do
@@ -227,7 +229,7 @@ makeNewLinkMapping rPtr = do
 foreign import ccall unsafe "&poppler_link_mapping_free"
   poppler_link_mapping_free :: FinalizerPtr LinkMapping
 
--- | Returns a list of 'ImageMapping' items that map from a location on page to a 'Action'. 
+-- | Returns a list of 'ImageMapping' items that map from a location on page to a 'Action'.
 pageGetImageMapping :: PageClass page => page
  -> IO [ImageMapping]
 pageGetImageMapping page = do
@@ -247,7 +249,7 @@ makeNewImageMapping rPtr = do
 foreign import ccall unsafe "&poppler_image_mapping_free"
   poppler_image_mapping_free :: FinalizerPtr ImageMapping
 
--- | Returns a list of 'FormFieldMapping' items that map from a location on page to a 'Action'. 
+-- | Returns a list of 'FormFieldMapping' items that map from a location on page to a 'Action'.
 pageGetFormFieldMapping :: PageClass page => page
  -> IO [FormFieldMapping]
 pageGetFormFieldMapping page = do
@@ -270,13 +272,13 @@ foreign import ccall unsafe "&poppler_form_field_mapping_free"
 -- | Returns a region containing the area that would be rendered by 'pageRenderSelection' or
 -- 'pageRenderSelectionToPixbuf' as a GList of PopplerRectangle.
 pageGetSelectionRegion :: PageClass page => page
- -> Double -- ^ @scale@     scale specified as pixels per point             
- -> SelectionStyle -- ^ @style@     a 'SelectionStyle'                         
- -> PopplerRectangle -- ^ @selection@ start and end point of selection as a rectangle 
+ -> Double -- ^ @scale@     scale specified as pixels per point
+ -> SelectionStyle -- ^ @style@     a 'SelectionStyle'
+ -> PopplerRectangle -- ^ @selection@ start and end point of selection as a rectangle
  -> IO [PopplerRectangle]
-pageGetSelectionRegion page scale style selection = 
+pageGetSelectionRegion page scale style selection =
   with selection $ \ selectionPtr -> do
-    glistPtr <- {#call poppler_page_get_selection_region #} 
+    glistPtr <- {#call poppler_page_get_selection_region #}
                  (toPage page)
                  (realToFrac scale)
                  ((fromIntegral . fromEnum) style)
@@ -288,23 +290,23 @@ pageGetSelectionRegion page scale style selection =
 
 -- | Render the selection specified by selection for page to the given cairo context. The selection will
 -- be rendered, using @glyphColor@ for the glyphs and @backgroundColor@ for the selection background.
--- 
+--
 -- If non-'Nothing', @oldSelection@ specifies the selection that is already rendered to cairo, in which case
 -- this function will (some day) only render the changed part of the selection.
-pageRenderSelection :: PageClass page => page 
- -> PopplerRectangle -- ^ @selection@        start and end point of selection as a rectangle 
- -> PopplerRectangle -- ^ @oldSelection@    previous selection                              
- -> SelectionStyle -- ^ @style@            a 'SelectionStyle'                         
- -> PopplerColor -- ^ @glyphColor@      color to use for drawing glyphs                 
- -> PopplerColor -- ^ @backgroundColor@ color to use for the selection background       
+pageRenderSelection :: PageClass page => page
+ -> PopplerRectangle -- ^ @selection@        start and end point of selection as a rectangle
+ -> PopplerRectangle -- ^ @oldSelection@    previous selection
+ -> SelectionStyle -- ^ @style@            a 'SelectionStyle'
+ -> PopplerColor -- ^ @glyphColor@      color to use for drawing glyphs
+ -> PopplerColor -- ^ @backgroundColor@ color to use for the selection background
  -> Render ()
 pageRenderSelection page selection oldSelection style glyphColor backgroundColor = do
   cairo <- ask
-  liftIO $ 
-         with selection $ \ selectionPtr -> 
-         with oldSelection $ \ oldSelectionPtr -> 
-         with glyphColor $ \ glyphColorPtr -> 
-         with backgroundColor $ \ backgroundColorPtr -> 
+  liftIO $
+         with selection $ \ selectionPtr ->
+         with oldSelection $ \ oldSelectionPtr ->
+         with glyphColor $ \ glyphColorPtr ->
+         with backgroundColor $ \ backgroundColorPtr ->
               {#call poppler_page_render_selection #}
                   (toPage page)
                   cairo
@@ -313,28 +315,36 @@ pageRenderSelection page selection oldSelection style glyphColor backgroundColor
                   ((fromIntegral . fromEnum) style)
                   (castPtr glyphColorPtr)
                   (castPtr backgroundColorPtr)
-      
+
+pageAddAnnot :: (PageClass page, AnnotClass annot) => page -> annot -> IO ()
+pageAddAnnot page annot =
+  {# call poppler_page_add_annot #} (toPage page) (toAnnot annot)
+
+pageRemoveAnnot :: (PageClass page, AnnotClass annot) => page -> annot -> IO ()
+pageRemoveAnnot page annot =
+  {# call poppler_page_remove_annot #} (toPage page) (toAnnot annot)
+
 -- | Render the selection specified by selection for page into pixbuf. The selection will be rendered at
 -- scale, using @glyphColor@ for the glyphs and @backgroundColor@ for the selection background.
--- 
+--
 -- If non-'Nothing', @oldSelection@ specifies the selection that is already rendered in pixbuf, in which case
 -- this function will (some day) only render the changed part of the selection.
 {-
-pageRenderSelectionToPixbuf :: PageClass page => page  
- -> Double -- ^ @scale@            scale specified as pixels per point             
- -> Int -- ^ @rotation@         rotate the document by the specified degree     
- -> Pixbuf -- ^ @pixbuf@           pixbuf to render to                             
- -> PopplerRectangle -- ^ @selection@        start and end point of selection as a rectangle 
- -> PopplerRectangle -- ^ @oldSelection@    previous selection                              
- -> SelectionStyle -- ^ @style@            a 'SelectionStyle'                         
- -> Color -- ^ @glyphColor@      color to use for drawing glyphs                 
- -> Color -- ^ @backgroundColor@ color to use for the selection background       
+pageRenderSelectionToPixbuf :: PageClass page => page
+ -> Double -- ^ @scale@            scale specified as pixels per point
+ -> Int -- ^ @rotation@         rotate the document by the specified degree
+ -> Pixbuf -- ^ @pixbuf@           pixbuf to render to
+ -> PopplerRectangle -- ^ @selection@        start and end point of selection as a rectangle
+ -> PopplerRectangle -- ^ @oldSelection@    previous selection
+ -> SelectionStyle -- ^ @style@            a 'SelectionStyle'
+ -> Color -- ^ @glyphColor@      color to use for drawing glyphs
+ -> Color -- ^ @backgroundColor@ color to use for the selection background
  -> IO ()
-pageRenderSelectionToPixbuf page scale rotation pixbuf selection oldSelection style glyphColor backgroundColor = 
-  with selection $ \ selectionPtr -> 
-  with oldSelection $ \ oldSelectionPtr -> 
-  with glyphColor $ \ glyphColorPtr -> 
-  with backgroundColor $ \ backgroundColorPtr -> 
+pageRenderSelectionToPixbuf page scale rotation pixbuf selection oldSelection style glyphColor backgroundColor =
+  with selection $ \ selectionPtr ->
+  with oldSelection $ \ oldSelectionPtr ->
+  with glyphColor $ \ glyphColorPtr ->
+  with backgroundColor $ \ backgroundColorPtr ->
       {#call poppler_page_render_selection_to_pixbuf #}
         (toPage page)
         (realToFrac scale)
