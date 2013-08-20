@@ -58,7 +58,8 @@ module Graphics.UI.Gtk.Poppler.Page (
     pageGetSelectionRegion,
     pageRenderSelection,
     pageAddAnnot,
-    pageRemoveAnnot
+    pageRemoveAnnot,
+    pageRectangleNew
     -- pageRenderSelectionToPixbuf,
     ) where
 
@@ -323,6 +324,11 @@ pageAddAnnot page annot =
 pageRemoveAnnot :: (PageClass page, AnnotClass annot) => page -> annot -> IO ()
 pageRemoveAnnot page annot =
   {# call poppler_page_remove_annot #} (toPage page) (toAnnot annot)
+
+pageRectangleNew :: IO PopplerRectangle
+pageRectangleNew =
+  (peekPopplerRectangle . castPtr) =<< {# call poppler_rectangle_new #}
+
 
 -- | Render the selection specified by selection for page into pixbuf. The selection will be rendered at
 -- scale, using @glyphColor@ for the glyphs and @backgroundColor@ for the selection background.
