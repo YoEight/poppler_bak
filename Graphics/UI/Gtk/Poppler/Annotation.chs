@@ -8,6 +8,7 @@ module Graphics.UI.Gtk.Poppler.Annotation (
     AnnotMarkupClass,
     annotGetAnnotType,
     annotGetAnnotFlags,
+    annotSetAnnotFlags,
     annotGetName,
     annotGetPageIndex,
     annotGetColor,
@@ -53,6 +54,12 @@ annotGetAnnotFlags :: AnnotClass annot => annot -> IO AnnotFlag
 annotGetAnnotFlags annot =
   liftM (toEnum . fromIntegral) $
   {# call poppler_annot_get_flags #} (toAnnot annot)
+
+annotSetAnnotFlags :: AnnotClass annot => annot -> AnnotFlag -> IO ()
+annotSetAnnotFlags annot flag =
+  {# call poppler_annot_set_flags #}
+  (toAnnot annot)
+  (fromIntegral $ fromEnum flag)
 
 annotGetName :: AnnotClass annot => annot -> IO String
 annotGetName annot =

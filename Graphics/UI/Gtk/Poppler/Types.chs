@@ -265,11 +265,12 @@ gTypeAnnot =
 mkAnnotMarkup = (AnnotMarkup, objectUnref)
 unAnnotMarkup (AnnotMarkup o) = o
 
-class GObjectClass o => AnnotMarkupClass o
+class AnnotClass o => AnnotMarkupClass o
 toAnnotMarkup :: AnnotMarkupClass o => o -> AnnotMarkup
 toAnnotMarkup = unsafeCastGObject . toGObject
 
 instance AnnotMarkupClass AnnotMarkup
+instance AnnotClass AnnotMarkup
 instance GObjectClass AnnotMarkup where
   toGObject = GObject . castForeignPtr . unAnnotMarkup
   unsafeCastGObject = AnnotMarkup . castForeignPtr . unGObject
