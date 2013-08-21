@@ -25,7 +25,9 @@ module Graphics.UI.Gtk.Poppler.Annotation (
     annotMarkupSetPopup,
     annotMarkupGetPopupIsOpen,
     annotMarkupSetPopupIsOpen,
-    annotTextNew
+    annotTextNew,
+    annotTextGetIsOpen,
+    annotTextSetIsOpen
     ) where
 
 import Control.Monad
@@ -150,3 +152,16 @@ annotTextNew doc selection =
   wrapNewGObject mkAnnot $
   with selection $ \selectionPtr ->
     {# call poppler_annot_text_new #} (toDocument doc) (castPtr selectionPtr)
+
+annotTextGetIsOpen :: AnnotClass annot => annot -> IO Bool
+annotTextGetIsOpen annot =
+  liftM toBool $
+  withForeignPtr (unAnnot (toAnnot annot)) $ \annotPtr ->
+    {# call poppler_annot_text_get_is_open #} (castPtr annotPtr)
+
+annotTextSetIsOpen :: AnnotClass annot => annot -> Bool -> IO ()
+annotTextSetIsOpen annot bool =
+  withForeignPtr (unAnnot (toAnnot annot)) $ \annotPtr ->
+    {# call poppler_annot_text_set_is_open #}
+    (castPtr annotPtr)
+    (fromBool bool)
