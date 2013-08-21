@@ -47,7 +47,7 @@ module Graphics.UI.Gtk.Poppler.Enums (
     FormChoiceType(..),
     FormFieldType(..),
     FormTextType(..),
-    AnnotType(..),
+    PopplerAnnotType(..),
     AnnotFlag(..),
     AnnotExternalDataType(..),
     AnnotMarkupReplyType(..),
@@ -84,7 +84,7 @@ import System.Glib.UTFString
 {# enum PopplerFormChoiceType as FormChoiceType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
 {# enum PopplerFormFieldType as FormFieldType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
 {# enum PopplerFormTextType as FormTextType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
-{# enum PopplerAnnotType as AnnotType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
+{# enum PopplerAnnotType {underscoreToCase} with prefix = "absurd" deriving (Eq, Ord, Bounded, Show, Typeable) #}
 {# enum PopplerAnnotFlag as AnnotFlag {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
 {# enum PopplerAnnotExternalDataType as AnnotExternalDataType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}
 {# enum PopplerAnnotMarkupReplyType as AnnotMarkupReplyType {underscoreToCase} with prefix = "Poppler" deriving (Eq, Ord, Bounded, Show, Typeable) #}

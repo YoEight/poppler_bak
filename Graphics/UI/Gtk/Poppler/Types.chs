@@ -67,6 +67,10 @@ module Graphics.UI.Gtk.Poppler.Types (
   toAnnotMarkup, 
   mkAnnotMarkup, unAnnotMarkup,
   castToAnnotMarkup, gTypeAnnotMarkup,
+  AnnotText(AnnotText), AnnotTextClass,
+  toAnnotText, 
+  mkAnnotText, unAnnotText,
+  castToAnnotText, gTypeAnnotText,
   Attachment(Attachment), AttachmentClass,
   toAttachment, 
   mkAttachment, unAttachment,
@@ -281,6 +285,31 @@ castToAnnotMarkup = castTo gTypeAnnotMarkup "AnnotMarkup"
 gTypeAnnotMarkup :: GType
 gTypeAnnotMarkup =
   {# call fun unsafe poppler_annot_markup_get_type #}
+
+-- ****************************************************************** AnnotText
+
+{#pointer *AnnotText foreign newtype #} deriving (Eq,Ord)
+
+mkAnnotText = (AnnotText, objectUnref)
+unAnnotText (AnnotText o) = o
+
+class AnnotMarkupClass o => AnnotTextClass o
+toAnnotText :: AnnotTextClass o => o -> AnnotText
+toAnnotText = unsafeCastGObject . toGObject
+
+instance AnnotTextClass AnnotText
+instance AnnotMarkupClass AnnotText
+instance AnnotClass AnnotText
+instance GObjectClass AnnotText where
+  toGObject = GObject . castForeignPtr . unAnnotText
+  unsafeCastGObject = AnnotText . castForeignPtr . unGObject
+
+castToAnnotText :: GObjectClass obj => obj -> AnnotText
+castToAnnotText = castTo gTypeAnnotText "AnnotText"
+
+gTypeAnnotText :: GType
+gTypeAnnotText =
+  {# call fun unsafe poppler_annot_text_get_type #}
 
 -- ***************************************************************** Attachment
 

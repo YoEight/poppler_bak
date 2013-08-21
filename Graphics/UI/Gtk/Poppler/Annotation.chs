@@ -2,10 +2,13 @@
 module Graphics.UI.Gtk.Poppler.Annotation (
     Annot,
     AnnotClass,
-    AnnotType (..),
+    PopplerAnnotType (..),
     AnnotFlag (..),
     AnnotMarkup,
     AnnotMarkupClass,
+    AnnotText,
+    AnnotTextClass,
+    castToAnnotText,
     annotGetAnnotType,
     annotGetAnnotFlags,
     annotSetAnnotFlags,
@@ -47,7 +50,7 @@ import Graphics.UI.Gtk.Poppler.Structs
 
 {# context lib="poppler" prefix="poppler" #}
 
-annotGetAnnotType :: AnnotClass annot => annot -> IO AnnotType
+annotGetAnnotType :: AnnotClass annot => annot -> IO PopplerAnnotType
 annotGetAnnotType annot =
   liftM (toEnum . fromIntegral) $
   {# call poppler_annot_get_annot_type #} (toAnnot annot)
@@ -147,21 +150,20 @@ annotMarkupSetPopupIsOpen mark bool =
   (toAnnotMarkup mark)
   (fromBool bool)
 
-annotTextNew :: DocumentClass doc => doc -> PopplerRectangle -> IO Annot
+annotTextNew :: DocumentClass doc => doc -> PopplerRectangle -> IO AnnotText
 annotTextNew doc selection =
-  wrapNewGObject mkAnnot $
+  wrapNewGObject mkAnnotText $
   with selection $ \selectionPtr ->
+    liftM castPtr $
     {# call poppler_annot_text_new #} (toDocument doc) (castPtr selectionPtr)
 
-annotTextGetIsOpen :: AnnotClass annot => annot -> IO Bool
+annotTextGetIsOpen :: AnnotTextClass annot => annot -> IO Bool
 annotTextGetIsOpen annot =
   liftM toBool $
-  withForeignPtr (unAnnot (toAnnot annot)) $ \annotPtr ->
-    {# call poppler_annot_text_get_is_open #} (castPtr annotPtr)
+  {# call poppler_annot_text_get_is_open #} (toAnnotText annot)
 
-annotTextSetIsOpen :: AnnotClass annot => annot -> Bool -> IO ()
+annotTextSetIsOpen :: AnnotTextClass annot => annot -> Bool -> IO ()
 annotTextSetIsOpen annot bool =
-  withForeignPtr (unAnnot (toAnnot annot)) $ \annotPtr ->
-    {# call poppler_annot_text_set_is_open #}
-    (castPtr annotPtr)
-    (fromBool bool)
+  {# call poppler_annot_text_set_is_open #}
+  (toAnnotText annot)
+  (fromBool bool)
