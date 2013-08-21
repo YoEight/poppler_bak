@@ -36,7 +36,7 @@ module Graphics.UI.Gtk.Poppler.Page (
     PageTransition,
     LinkMapping,
     FormFieldMapping,
-    AnnotMapping,
+    AnnotMapping(..),
 -- * Enums
     SelectionStyle (..),
 
@@ -59,10 +59,12 @@ module Graphics.UI.Gtk.Poppler.Page (
     pageRenderSelection,
     pageAddAnnot,
     pageRemoveAnnot,
-    pageRectangleNew
+    pageRectangleNew,
+    pageGetAnnotMapping
     -- pageRenderSelectionToPixbuf,
     ) where
 
+import Control.Applicative
 import Control.Monad
 import Data.Typeable
 import System.Glib.FFI
@@ -329,24 +331,12 @@ pageRectangleNew :: IO PopplerRectangle
 pageRectangleNew =
   (peekPopplerRectangle . castPtr) =<< {# call poppler_rectangle_new #}
 
-{#pointer *AnnotMapping foreign newtype #}
-
-makeNewAnnotMapping :: Ptr AnnotMapping -> IO AnnotMapping
-makeNewAnnotMapping rPtr = do
-  annotMapping <- newForeignPtr rPtr poppler_annot_mapping_free
-  return (AnnotMapping annotMapping)
-
 pageGetAnnotMapping :: PageClass page => page -> IO [AnnotMapping]
 pageGetAnnotMapping page = do
   glistPtr <- {# call poppler_page_get_annot_mapping #} (toPage page)
   list     <- fromGList glistPtr
-  mappings <- mapM makeNewAnnotMapping list
-  {#call unsafe poppler_page_free_form_field_mapping #} (castPtr glistPtr)
+  mappings <- mapM peek list
   return mappings
-
-foreign import ccall unsafe "&poppler_annot_mapping_free"
-  poppler_annot_mapping_free :: FinalizerPtr AnnotMapping
-
 
 -- | Render the selection specified by selection for page into pixbuf. The selection will be rendered at
 -- scale, using @glyphColor@ for the glyphs and @backgroundColor@ for the selection background.

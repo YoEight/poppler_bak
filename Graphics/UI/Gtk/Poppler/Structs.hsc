@@ -32,11 +32,12 @@
 --
 module Graphics.UI.Gtk.Poppler.Structs (
     PopplerRectangle(..),
-    peekPopplerRectangle,                    
+    peekPopplerRectangle,
     PopplerColor(..),
-    peekPopplerColor,                
+    peekPopplerColor,
+    AnnotMapping(..)
     ) where
-    
+
 import Control.Monad		(liftM)
 import Data.IORef
 import Control.Exception
@@ -44,7 +45,8 @@ import Control.Exception
 import System.Glib.FFI
 import System.Glib.UTFString ( peekUTFString, UTFCorrection,
                                ofsToUTF, ofsFromUTF )
-import System.Glib.GObject (makeNewGObject)
+import System.Glib.GObject (makeNewGObject, wrapNewGObject)
+import Graphics.UI.Gtk.Poppler.Bridge
 
 -- | Rectangles describing an area in 'Double's.
 --
@@ -74,10 +76,10 @@ peekPopplerRectangle ptr = do
     (y2_ ::#gtk2hs_type gdouble)	<- #{peek PopplerRectangle, y2} ptr
     return (PopplerRectangle (realToFrac x1_) (realToFrac y1_)
                              (realToFrac x2_) (realToFrac y2_))
-      
+
 data PopplerColor = PopplerColor (#gtk2hs_type guint16) (#gtk2hs_type guint16) (#gtk2hs_type guint16)
              deriving (Eq,Show)
-      
+
 instance Storable PopplerColor where
   sizeOf _ = #{const sizeof(PopplerColor)}
   alignment _ = alignment (undefined::#gtk2hs_type guint16)
@@ -86,10 +88,27 @@ instance Storable PopplerColor where
     #{poke PopplerColor, red}   ptr red
     #{poke PopplerColor, green} ptr green
     #{poke PopplerColor, blue}  ptr blue
-     
+
 peekPopplerColor :: Ptr PopplerColor -> IO PopplerColor
 peekPopplerColor ptr = do
     red	   <- #{peek PopplerColor, red} ptr
     green  <- #{peek PopplerColor, green} ptr
     blue   <- #{peek PopplerColor, blue} ptr
     return $ PopplerColor red green blue
+
+data AnnotMapping = AnnotMapping { annotMappingArea  :: PopplerRectangle
+                                 , annotMappingAnnot :: Annot }
+
+instance Storable AnnotMapping where
+  sizeOf _ = #{size PopplerAnnotMapping}
+  alignment _ = alignment (undefined :: CInt)
+
+  peek ptr = do
+    area  <- #{peek PopplerAnnotMapping, area} ptr
+    annot <- wrapNewGObject mkAnnot (#{peek PopplerAnnotMapping, annot} ptr)
+    return (AnnotMapping area annot)
+
+  poke ptr (AnnotMapping area annot) =
+    #{poke PopplerAnnotMapping, area} ptr area >>= \_ ->
+      withForeignPtr (unAnnot annot) $ \annotPtr ->
+        #{poke PopplerAnnotMapping, annot} ptr annotPtr
