@@ -35,6 +35,7 @@ module Graphics.UI.Gtk.Poppler.Annotation (
 
 import Control.Monad
 import Data.Typeable
+import Data.Bits
 import System.Glib.FFI
 import System.Glib.Flags
 import System.Glib.GError
@@ -50,21 +51,32 @@ import Graphics.UI.Gtk.Poppler.Structs
 
 {# context lib="poppler" prefix="poppler" #}
 
+toByteMask :: [AnnotFlag] -> Int
+toByteMask = foldr (.|.) 0 . fmap fromEnum
+
+fromByteMask :: Int -> [AnnotFlag]
+fromByteMask mask = foldr go [] (enumFrom minBound)
+    where
+      go x xs
+          | AnnotFlagUnknown == x             = xs
+          | fromEnum x == fromEnum x .&. mask = x:xs
+          | otherwise                         = xs
+
 annotGetAnnotType :: AnnotClass annot => annot -> IO PopplerAnnotType
 annotGetAnnotType annot =
   liftM (toEnum . fromIntegral) $
   {# call poppler_annot_get_annot_type #} (toAnnot annot)
 
-annotGetAnnotFlags :: AnnotClass annot => annot -> IO AnnotFlag
+annotGetAnnotFlags :: AnnotClass annot => annot -> IO [AnnotFlag]
 annotGetAnnotFlags annot =
-  liftM (toEnum . fromIntegral) $
+  liftM (fromByteMask . fromIntegral) $
   {# call poppler_annot_get_flags #} (toAnnot annot)
 
-annotSetAnnotFlags :: AnnotClass annot => annot -> AnnotFlag -> IO ()
-annotSetAnnotFlags annot flag =
+annotSetAnnotFlags :: AnnotClass annot => annot -> [AnnotFlag] -> IO ()
+annotSetAnnotFlags annot flags =
   {# call poppler_annot_set_flags #}
   (toAnnot annot)
-  (fromIntegral $ fromEnum flag)
+  (fromIntegral $ toByteMask flags)
 
 annotGetName :: AnnotClass annot => annot -> IO String
 annotGetName annot =
